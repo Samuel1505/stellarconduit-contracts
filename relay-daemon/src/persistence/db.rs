@@ -138,7 +138,9 @@ mod tests {
         let pubkey = test_pubkey(1);
         let expires_at = now_secs() + 3600;
 
-        db.save_ban(&pubkey, expires_at, "malicious peer").await.unwrap();
+        db.save_ban(&pubkey, expires_at, "malicious peer")
+            .await
+            .unwrap();
 
         let bans = db.load_active_bans().await.unwrap();
         assert_eq!(bans.len(), 1);
@@ -159,14 +161,21 @@ mod tests {
         manager.ban_peer(&pubkey, 1, "expiry test").await.unwrap();
 
         let before = db.load_active_bans().await.unwrap();
-        assert_eq!(before.len(), 1, "ban should be present immediately after banning");
+        assert_eq!(
+            before.len(),
+            1,
+            "ban should be present immediately after banning"
+        );
 
         tokio::time::sleep(Duration::from_secs(2)).await;
 
         manager.check_expirations().await.unwrap();
 
         let after = db.load_active_bans().await.unwrap();
-        assert!(after.is_empty(), "expired ban must be removed from the database");
+        assert!(
+            after.is_empty(),
+            "expired ban must be removed from the database"
+        );
     }
 
     /// Write a ban to the DB directly. Re-create a PeerList and call the startup
@@ -177,13 +186,18 @@ mod tests {
         let pubkey = test_pubkey(3);
         let expires_at = now_secs() + 3600;
 
-        db.save_ban(&pubkey, expires_at, "persistent ban").await.unwrap();
+        db.save_ban(&pubkey, expires_at, "persistent ban")
+            .await
+            .unwrap();
 
         let mut peer_list = PeerList::new();
         let count = restore_bans(&db, &mut peer_list).await.unwrap();
 
         assert_eq!(count, 1);
-        assert!(peer_list.is_banned(&pubkey), "peer must be banned in memory after restore");
+        assert!(
+            peer_list.is_banned(&pubkey),
+            "peer must be banned in memory after restore"
+        );
     }
 
     /// Write a ban with expires_at in the past. Assert it is NOT added to PeerList
@@ -199,13 +213,19 @@ mod tests {
 
         // load_active_bans must filter it out
         let active = db.load_active_bans().await.unwrap();
-        assert!(active.is_empty(), "expired ban must not appear in active bans");
+        assert!(
+            active.is_empty(),
+            "expired ban must not appear in active bans"
+        );
 
         // restore_bans must not add it to PeerList
         let mut peer_list = PeerList::new();
         let count = restore_bans(&db, &mut peer_list).await.unwrap();
 
         assert_eq!(count, 0);
-        assert!(!peer_list.is_banned(&pubkey), "expired ban must not be restored to memory");
+        assert!(
+            !peer_list.is_banned(&pubkey),
+            "expired ban must not be restored to memory"
+        );
     }
 }

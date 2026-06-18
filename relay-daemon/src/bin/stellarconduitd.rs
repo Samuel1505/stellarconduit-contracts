@@ -5,8 +5,8 @@ use relay_daemon::persistence::db::Database;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
-    let db_path = std::env::var("STELLARCONDUIT_DB")
-        .unwrap_or_else(|_| "stellarconduit.db".to_string());
+    let db_path =
+        std::env::var("STELLARCONDUIT_DB").unwrap_or_else(|_| "stellarconduit.db".to_string());
 
     let db = Database::open(&db_path)?;
 
