@@ -1,6 +1,5 @@
 use relay_daemon::discovery::peer_list::PeerList;
 use relay_daemon::persistence::db::Database;
-use relay_daemon::security::peer_ban::restore_bans;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -20,22 +19,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap()
         .as_secs();
 
-    let mut peer_list_guard = &mut peer_list;
     let mut restored = 0usize;
     for ban in active_bans {
         if ban.expires_at > now {
             let remaining_secs = ban.expires_at - now;
-            peer_list_guard.ban_peer(&ban.pubkey, remaining_secs);
+            peer_list.ban_peer(&ban.pubkey, remaining_secs);
             restored += 1;
         }
     }
-    drop(peer_list_guard);
 
     log::info!("Restored {} active peer ban(s) from database.", restored);
-
-    // Alternatively, the same startup logic can be expressed as:
-    //   let restored = restore_bans(&db, &mut peer_list).await?;
-    //   log::info!("Restored {} active peer ban(s) from database.", restored);
 
     // --- Main daemon loop (placeholder) ---
     log::info!("stellarconduitd started. DB: {}", db_path);
