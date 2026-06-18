@@ -5,6 +5,7 @@ members = [
   "contracts/fee-distributor",
   "contracts/dispute-resolver",
   "contracts/treasury",
+  "relay-daemon",
 ]
 
 [workspace.dependencies]
